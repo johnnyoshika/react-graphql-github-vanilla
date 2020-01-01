@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import Organization from './Organization';
 
 const axiosGitHubGraphQL = axios.create({
   baseURL: 'https://api.github.com/graphql',
@@ -21,6 +22,8 @@ const GET_ORGANIZATION = `
 
 function App() {
   const [path, setPath] = useState('the-road-to-learn-react/the-road-to-learn-react');
+  const [organization, setOrganization] = useState(null);
+  const [errors, setErrors] = useState(null);
 
   const onSubmit = e => {
     e.preventDefault();
@@ -35,7 +38,10 @@ function App() {
   const fetchFromGitHub = () => {
     axiosGitHubGraphQL
       .post('', { query: GET_ORGANIZATION})
-      .then(result => console.log(result));
+      .then(result => {
+        setOrganization(result.data.data.organization);
+        setErrors(result.data.errors);
+      });
   };
 
   return (
@@ -50,7 +56,12 @@ function App() {
         <button type="submit">Search</button>
       </form>
       <hr />
-
+      
+      {organization ? (
+        <Organization organization={organization} errors={errors} />
+      ) : (
+        <p>No information yet...</p>
+      )}
     </div>
   );
 }
