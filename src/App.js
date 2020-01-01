@@ -11,7 +11,7 @@ const axiosGitHubGraphQL = axios.create({
 
 const TITLE = 'React GraphQL GitHub Client';
 
-const GET_REPOSITORY_OF_ORGANIZATION = `
+const GET_ISSUES_OF_REPOSITORY = `
   {
     organization(login: "the-road-to-learn-react") {
       name
@@ -19,6 +19,15 @@ const GET_REPOSITORY_OF_ORGANIZATION = `
       repository(name: "the-road-to-learn-react") {
         name
         url
+        issues(last: 5) {
+          edges {
+            node {
+              id
+              title
+              url
+            }
+          }
+        }
       }
     }
   }
@@ -41,7 +50,7 @@ function App() {
 
   const fetchFromGitHub = () => {
     axiosGitHubGraphQL
-      .post('', { query: GET_REPOSITORY_OF_ORGANIZATION})
+      .post('', { query: GET_ISSUES_OF_REPOSITORY})
       .then(result => {
         if (result.data.errors)
           setErrors(result.data.errors);
