@@ -43,8 +43,10 @@ function App() {
     axiosGitHubGraphQL
       .post('', { query: GET_REPOSITORY_OF_ORGANIZATION})
       .then(result => {
-        setOrganization(result.data.data.organization);
-        setErrors(result.data.errors);
+        if (result.data.errors)
+          setErrors(result.data.errors);
+        else
+          setOrganization(result.data.data.organization);
       });
   };
 
@@ -61,7 +63,7 @@ function App() {
       </form>
       <hr />
       
-      {organization ? (
+      {(organization || errors) ? (
         <Organization organization={organization} errors={errors} />
       ) : (
         <p>No information yet...</p>
