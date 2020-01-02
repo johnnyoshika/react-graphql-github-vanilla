@@ -25,6 +25,14 @@ const GET_ISSUES_OF_REPOSITORY = `
               id
               title
               url
+              reactions(last: 3) {
+                edges {
+                  node {
+                    id
+                    content
+                  }
+                }
+              }
             }
           }
         }
