@@ -12,14 +12,14 @@ const axiosGitHubGraphQL = axios.create({
 const TITLE = 'React GraphQL GitHub Client';
 
 const GET_ISSUES_OF_REPOSITORY = `
-  query ($organization: String!, $repository: String!) {
+  query ($organization: String!, $repository: String!, $cursor: String) {
     organization(login: $organization) {
       name
       url
       repository(name: $repository) {
         name
         url
-        issues(last: 5, states: [OPEN]) {
+        issues(first: 5, after: $cursor, states: [OPEN]) {
           edges {
             node {
               id
@@ -34,6 +34,11 @@ const GET_ISSUES_OF_REPOSITORY = `
                 }
               }
             }
+          }
+          totalCount
+          pageInfo {
+            endCursor
+            hasNextPage
           }
         }
       }
@@ -57,7 +62,7 @@ function App() {
     fetchFromGitHub();
   }, []);
 
-  const fetchFromGitHub = () => {
+  const fetchFromGitHub = (cursor) => {
     const [organizationLogin, repositoryName] = path.split('/');
 
     setOrganization(null);
@@ -65,7 +70,7 @@ function App() {
     axiosGitHubGraphQL
       .post('', {
         query: GET_ISSUES_OF_REPOSITORY,
-        variables: { organization: organizationLogin, repository: repositoryName }
+        variables: { organization: organizationLogin, repository: repositoryName, cursor }
       })
       .then(result => {
         if (result.data.errors)
@@ -73,6 +78,11 @@ function App() {
         else
           setOrganization(result.data.data.organization);
       });
+  };
+
+  const onFetchMoreIssues = () => {
+    const { endCursor } = organization.repository.issues.pageInfo;
+    fetchFromGitHub(endCursor);
   };
 
   return (
@@ -89,7 +99,7 @@ function App() {
       <hr />
       
       {(organization || errors) ? (
-        <Organization organization={organization} errors={errors} />
+        <Organization organization={organization} errors={errors} onFetchMoreIssues={onFetchMoreIssues} />
       ) : (
         <p>No information yet...</p>
       )}

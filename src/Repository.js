@@ -1,6 +1,9 @@
 import React from 'react';
 
-function Repository({ repository }) {
+function Repository({
+  repository,
+  onFetchMoreIssues
+}) {
   return (
     <div>
       <p>
@@ -20,6 +23,12 @@ function Repository({ repository }) {
           </li>
         ))}
       </ul>
+
+      <hr />
+      
+      {repository.issues.pageInfo.hasNextPage && (
+        <button onClick={onFetchMoreIssues}>More</button>
+      )}
     </div>
   );
 }
