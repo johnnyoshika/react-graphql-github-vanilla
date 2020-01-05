@@ -20,7 +20,9 @@ function Organization({
         <strong>Issues from Organization:</strong>
         <a href={organization.url}>{organization.name}</a>
       </p>
-      <Repository repository={organization.repository} onFetchMoreIssues={onFetchMoreIssues} />
+      {organization.repository && (
+        <Repository repository={organization.repository} onFetchMoreIssues={onFetchMoreIssues} />
+      )}
     </div>
   );
 }
