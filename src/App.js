@@ -46,6 +46,28 @@ const GET_ISSUES_OF_REPOSITORY = `
   }
 `;
 
+const resolveIssuesQuery = (organization, queryResult, cursor) => {
+  const { data } = queryResult.data;
+
+  if (!cursor)
+    return data.organization;
+
+  const { edges: oldIssues } = organization.repository.issues;
+  const { edges: newIssues } = data.organization.repository.issues;
+  const updatedIssues = [...oldIssues, ...newIssues];
+
+  return {
+    ...data.organization,
+    repository: {
+      ...data.organization.repository,
+      issues: {
+        ...data.organization.repository.issues,
+        edges: updatedIssues,
+      }
+    }
+  };
+};
+
 function App() {
   const [path, setPath] = useState('the-road-to-learn-react/the-road-to-learn-react');
   const [organization, setOrganization] = useState(null);
@@ -65,7 +87,6 @@ function App() {
   const fetchFromGitHub = (cursor) => {
     const [organizationLogin, repositoryName] = path.split('/');
 
-    setOrganization(null);
     setErrors(null);
     axiosGitHubGraphQL
       .post('', {
@@ -76,7 +97,7 @@ function App() {
         if (result.data.errors)
           setErrors(result.data.errors);
         else
-          setOrganization(result.data.data.organization);
+          setOrganization(resolveIssuesQuery(organization, result, cursor));
       });
   };
 
