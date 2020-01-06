@@ -17,8 +17,13 @@ const GET_ISSUES_OF_REPOSITORY = `
       name
       url
       repository(name: $repository) {
+        id
         name
         url
+        stargazers {
+          totalCount
+        }
+        viewerHasStarred
         issues(first: 5, after: $cursor, states: [OPEN]) {
           edges {
             node {
@@ -46,6 +51,30 @@ const GET_ISSUES_OF_REPOSITORY = `
   }
 `;
 
+const ADD_STAR = `
+  mutation ($repositoryId: ID!) {
+    addStar(input:{
+      starrableId: $repositoryId
+    }) {
+      starrable {
+        viewerHasStarred
+      }
+    }
+  }
+`;
+
+const REMOVE_STAR = `
+  mutation ($repositoryId: ID!) {
+    removeStar(input:{
+      starrableId: $repositoryId
+    }) {
+      starrable {
+        viewerHasStarred
+      }
+    }
+  }
+`;
+
 const resolveIssuesQuery = (organization, queryResult, cursor) => {
   const { data } = queryResult.data;
 
@@ -67,6 +96,30 @@ const resolveIssuesQuery = (organization, queryResult, cursor) => {
     }
   };
 };
+
+const resolveStarMutation = (organization, viewerHasStarred) => {
+  const { totalCount } = organization.repository.stargazers;
+  return {
+    ...organization,
+    repository: {
+      ...organization.repository,
+      viewerHasStarred,
+      stargazers: {
+        totalCount: totalCount + (viewerHasStarred ? 1 : -1)
+      }
+    }
+  };
+};
+
+const addStarToRepository = repositoryId => axiosGitHubGraphQL.post('', {
+  query: ADD_STAR,
+  variables: { repositoryId }
+});
+
+const removeStarFromRepository = repositoryId => axiosGitHubGraphQL.post('', {
+  query: REMOVE_STAR,
+  variables: { repositoryId }
+});
 
 function App() {
   const [path, setPath] = useState('the-road-to-learn-react/the-road-to-learn-react');
@@ -106,6 +159,12 @@ function App() {
     fetchFromGitHub(endCursor);
   };
 
+  const onStarRepository = (repositoryId, viewerHasStarred) => viewerHasStarred
+    ? removeStarFromRepository(repositoryId).then(mutationResult =>
+        setOrganization(resolveStarMutation(organization, mutationResult.data.data.removeStar.starrable.viewerHasStarred)))
+    : addStarToRepository(repositoryId).then(mutationResult =>
+        setOrganization(resolveStarMutation(organization, mutationResult.data.data.addStar.starrable.viewerHasStarred)));
+
   return (
     <div>
       <h1>{TITLE}</h1>
@@ -120,7 +179,11 @@ function App() {
       <hr />
       
       {(organization || errors) ? (
-        <Organization organization={organization} errors={errors} onFetchMoreIssues={onFetchMoreIssues} />
+        <Organization
+          organization={organization}
+          errors={errors}
+          onFetchMoreIssues={onFetchMoreIssues}
+          onStarRepository={onStarRepository} />
       ) : (
         <p>No information yet...</p>
       )}

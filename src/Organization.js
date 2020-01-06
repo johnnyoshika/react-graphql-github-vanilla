@@ -4,7 +4,8 @@ import Repository from './Repository';
 function Organization({
   organization,
   errors,
-  onFetchMoreIssues
+  onFetchMoreIssues,
+  onStarRepository
 }) {
   if (errors)
     return (
@@ -21,7 +22,10 @@ function Organization({
         <a href={organization.url}>{organization.name}</a>
       </p>
       {organization.repository && (
-        <Repository repository={organization.repository} onFetchMoreIssues={onFetchMoreIssues} />
+        <Repository 
+          repository={organization.repository}
+          onFetchMoreIssues={onFetchMoreIssues}
+          onStarRepository={onStarRepository} />
       )}
     </div>
   );
