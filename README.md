@@ -2,6 +2,8 @@ Experiment with GraphQL without a GraphQL client library, following the tutorial
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+This project is related to: https://github.com/johnnyoshika/react-graphql-github-apollo
+
 ## Setup
 * Clone this repo.
 * Create an `.env` file in the root of this project and set its content to the following, where `access_token` is generated from: https://github.com/settings/tokens. Grant the permissions listed here for the token: https://www.robinwieruch.de/getting-started-github-graphql-api
